@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Portal Constat</title>
+
+<style>
+
+*{
+ margin:0;
+ padding:0;
+ box-sizing:border-box;
+}
+
+body{
+ font-family:'Segoe UI',sans-serif;
+ background:linear-gradient(135deg,#0f172a,#1e3a8a);
+ min-height:100vh;
+ padding:20px;
+}
+
+.container{
+ max-width:1400px;
+ margin:auto;
+ background:rgba(255,255,255,.08);
+ backdrop-filter:blur(15px);
+ border-radius:25px;
+ padding:30px;
+ box-shadow:0 15px 35px rgba(0,0,0,.30);
+}
+
+.logo{
+ display:block;
+ max-width:450px;
+ width:90%;
+ margin:auto;
+}
+
+h1{
+ color:white;
+ text-align:center;
+ margin-top:20px;
+}
+
+.subtitulo{
+ color:#dbeafe;
+ text-align:center;
+ margin:10px 0 25px;
+ font-size:16px;
+}
+
+.dashboard{
+ display:flex;
+ justify-content:center;
+ flex-wrap:wrap;
+ gap:20px;
+ margin-bottom:25px;
+}
+
+.info-card{
+ background:rgba(255,255,255,.08);
+ border:1px solid rgba(255,255,255,.10);
+ min-width:280px;
+ padding:20px;
+ border-radius:18px;
+ display:flex;
+ gap:15px;
+ align-items:center;
+ color:white;
+}
+
+.info-icon{
+ font-size:40px;
+}
+
+.info-card h3{
+ font-size:22px;
+}
+
+.info-card p{
+ color:#cbd5e1;
+ font-size:13px;
+}
+
+.pesquisa{
+ text-align:center;
+ margin-bottom:20px;
+}
+
+.pesquisa input{
+ width:100%;
+ max-width:700px;
+ padding:16px;
+ border:none;
+ border-radius:14px;
+ font-size:16px;
+ box-shadow:0 5px 15px rgba(0,0,0,.15);
+}
+
+#resultadoPesquisa{
+ color:white;
+ text-align:center;
+ margin-bottom:20px;
+}
+
+.cadastro{
+ background:rgba(255,255,255,.08);
+ border:1px solid rgba(255,255,255,.10);
+ border-radius:20px;
+ padding:25px;
+ margin-bottom:30px;
+ display:flex;
+ gap:10px;
+ flex-wrap:wrap;
+ justify-content:center;
+}
+
+.cadastro input{
+ width:280px;
+ padding:14px;
+ border:none;
+ border-radius:12px;
+ font-size:15px;
+}
+
+.btn-adicionar{
+ border:none;
+ cursor:pointer;
+ color:white;
+ font-weight:bold;
+ border-radius:12px;
+ padding:14px 22px;
+ background:linear-gradient(135deg,#2563eb,#1d4ed8);
+ transition:.3s;
+}
+
+.btn-adicionar:hover{
+ transform:translateY(-3px);
+}
+
+.links{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+ gap:20px;
+}
+
+.card{
+ background:white;
+ border-radius:20px;
+ padding:25px;
+ text-align:center;
+ border-top:5px solid #2563eb;
+ box-shadow:0 10px 25px rgba(0,0,0,.15);
+ transition:.3s;
+}
+
+.card:hover{
+ transform:translateY(-6px);
+}
+
+.card-icon{
+ font-size:50px;
+ margin-bottom:15px;
+}
+
+.card a{
+ display:block;
+ text-decoration:none;
+ color:#1e40af;
+ font-size:18px;
+ font-weight:bold;
+ margin-bottom:18px;
+}
+
+.btn-remover{
+ width:100%;
+ border:none;
+ cursor:pointer;
+ color:white;
+ font-weight:600;
+ border-radius:12px;
+ padding:12px;
+ background:linear-gradient(135deg,#ef4444,#dc2626);
+ transition:.3s;
+}
+
+.btn-remover:hover{
+ transform:translateY(-2px);
+ box-shadow:0 8px 20px rgba(220,38,38,.35);
+}
+
+/* MODAL */
+
+.modal{
+ position:fixed;
+ top:0;
+ left:0;
+ width:100%;
+ height:100%;
+ background:rgba(0,0,0,.65);
+ display:none;
+ justify-content:center;
+ align-items:center;
+ z-index:9999;
+}
+
+.modal-content{
+ width:90%;
+ max-width:420px;
+ background:white;
+ border-radius:25px;
+ padding:30px;
+ text-align:center;
+ animation:aparecer .25s ease;
+}
+
+.modal-icon{
+ font-size:60px;
+ margin-bottom:15px;
+}
+
+.modal-content h2{
+ color:#111827;
+ margin-bottom:10px;
+}
+
+.modal-content p{
+ color:#6b7280;
+ margin-bottom:25px;
+}
+
+.modal-actions{
+ display:flex;
+ gap:10px;
+}
+
+.btn-cancelar{
+ flex:1;
+ border:none;
+ cursor:pointer;
+ padding:12px;
+ border-radius:12px;
+ background:#e5e7eb;
+ font-weight:600;
+}
+
+.btn-confirmar{
+ flex:1;
+ border:none;
+ cursor:pointer;
+ padding:12px;
+ border-radius:12px;
+ background:#dc2626;
+ color:white;
+ font-weight:600;
+}
+
+.btn-confirmar:hover{
+ background:#b91c1c;
+}
+
+@keyframes aparecer{
+ from{
+ opacity:0;
+ transform:scale(.8);
+ }
+ to{
+ opacity:1;
+ transform:scale(1);
+ }
+}
+
+@media(max-width:768px){
+
+ .cadastro{
+ flex-direction:column;
+ align-items:center;
+ }
+
+ .cadastro input,
+ .cadastro button{
+ width:100%;
+ max-width:500px;
+ }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+ <img src="constat.png" class="logo" alt="Constat">
+
+ <h1>Portal de Atendimento Constat</h1>
+
+ <p class="subtitulo">
+ Central de Ferramentas e Acessos Rápidos
+ </p>
+
+ <div class="dashboard">
+
+ <div class="info-card">
+ <div class="info-icon">🌐</div>
+ <div>
+ <h3 id="totalAtalhos">0</h3>
+ <p>Atalhos cadastrados</p>
+ </div>
+ </div>
+
+ <div class="info-card">
+ <div class="info-icon">🕒</div>
+ <div>
+ <h3 id="relogio"></h3>
+ <p>Data e hora atual</p>
+ </div>
+ </div>
+
+ </div>
+
+ <div class="pesquisa">
+ <input
+ type="text"
+ id="pesquisa"
+ placeholder="🔍 Pesquisar atalhos..."
+ onkeyup="filtrarLinks()">
+ </div>
+
+ <div id="resultadoPesquisa"></div>
+
+ <div class="cadastro">
+
+ <input
+ type="text"
+ id="novoNome"
+ placeholder="Nome do atalho">
+
+ <input
+ type="url"
+ id="novoLink"
+ placeholder="https://site.com.br">
+
+ <button
+ class="btn-adicionar"
+ onclick="adicionarLink()">
+ ➕ Adicionar Atalho
+ </button>
+
+ </div>
+
+ <div class="links" id="linksContainer">
+
+ <div class="card">
+ <div class="card-icon">🚀</div>
+ <a href="https://acessos.sicredi.net/" target="_blank">
+ Acesso Inteligente
+ </a>
+ </div>
+
+ <div class="card">
+ <div class="card-icon">🎫</div>
+ <a href="https://sicredi.atlassian.net/jira/for-you" target="_blank">
+ Jira
+ </a>
+ </div>
+
+ <div class="card">
+ <div class="card-icon">💬</div>
+ <a href="https://sicrediprod.service-now.com/sicredi" target="_blank">
+ Portal do Colaborador
+ </a>
+ </div>
+
+ <div class="card">
+ <div class="card-icon">🤖</div>
+ <a href="https://m365.cloud.microsoft/chat" target="_blank">
+ Microsoft Copilot
+ </a>
+ </div>
+
+ <div class="card">
+ <div class="card-icon">💻</div>
+ <a href="https://www.dell.com/support/home/pt-br" target="_blank">
+ Dell
+ </a>
+ </div>
+
+ <div class="card">
+ <div class="card-icon">📂</div>
+ <a href="https://sicredi.atlassian.net/servicedesk/customer/portal/1135/group/1543/create/5456" target="_blank">
+ Chamados Expedição
+ </a>
+ </div>
+
+ <div class="card">
+ <div class="card-icon">📂</div>
+ <a href="https://sicredi.atlassian.net/servicedesk/customer/portal/1331/group/1903/create/6806" target="_blank">
+ Chamados INFRASEC
+ </a>
+ </div>
+
+ <div class="card">
+ <div class="card-icon">🔑</div>
+ <a href="https://mbam.sicredi.com.br/helpdesk/KeyRecoveryPage.aspx" target="_blank">
+ BitLocker - Chave ID
+ </a>
+ </div>
+
+ <div class="card">
+ <div class="card-icon">📞</div>
+ <a href="https://sicredi.atlassian.net/servicedesk/customer/portal/1009" target="_blank">
+ Telefonia
+ </a>
+ </div>
+
+ <div class="card">
+ <div class="card-icon">🎯</div>
+ <a href="https://sicredi.atlassian.net/servicedesk/customer/portal/999" target="_blank">
+ Administração de Facilities
+ </a>
+ </div>
+
+ <div class="card">
+ <div class="card-icon">📱</div>
+ <a href="https://sicredi.atlassian.net/servicedesk/customer/portal/1011/group/1217/create/3776" target="_blank">
+ Digital Workplace - Mac
+ </a>
+ </div>
+
+ <div class="card">
+ <div class="card-icon">📌</div>
+ <a href="https://sicredi.deskbee.app/app/home" target="_blank">
+ Deskbee App
+ </a>
+ </div>
+
+ <div class="card">
+ <div class="card-icon">📋</div>
+ <a href="https://constatcxs.sharepoint.com/:x:/r/sites/SuporteCampo/_layouts/15/doc2.aspx?sourcedoc=%7BE995B6C3-A5D7-4B72-8712-20CF93F39F8C%7D&file=Controles%20Constat.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&wdExp=TEAMS-TREATMENT&web=1&isSPOFile=1&ovuser=3223964c-6e1f-48ba-b705-423351281a8c%2Cbarbosa_marco%40sicredi.com.br&clickparams=eyJBcHBOYW1lIjoiVGVhbXMtRGVza3RvcCIsIkFwcFZlcnNpb24iOiI0OS8yNjA4MDIwMDYyMCIsIkhhc0ZlZGVyYXRlZFVzZXIiOmZhbHNlfQ%3D%3D" target="_blank">
+ Controles Constat
+ </a>
+ </div>
+
+ <div class="card">
+ <div class="card-icon">📋</div>
+ <a href="https://confederacaosicredi.sharepoint.com/:x:/r/sites/Endpoint/_layouts/15/doc2.aspx?action=edit&sourcedoc=%7B6e5abc7e-0c42-444e-8b20-6226169f0f8b%7D&wdExp=TEAMS-TREATMENT&web=1&ovuser=3223964c-6e1f-48ba-b705-423351281a8c%2Cbarbosa_marco%40sicredi.com.br&clickparams=eyJBcHBOYW1lIjoiVGVhbXMtRGVza3RvcCIsIkFwcFZlcnNpb24iOiI0OS8yNjA4MDIwMDYyMCIsIkhhc0ZlZGVyYXRlZFVzZXIiOmZhbHNlfQ%3D%3D" target="_blank">
+ Controle de Computadores
+ </a>
+ </div>
+
+ <div class="card">
+ <div class="card-icon">📋</div>
+ <a href="https://constatcxs.sharepoint.com/:x:/r/sites/SuporteCampo/_layouts/15/doc2.aspx?sourcedoc=%7B5AC94B9B-C316-43AD-AFD0-E3F0601F297C%7D&file=FInal%20de%20Ciclo%202026%20-%201%25u00b0%20Semestre.xlsx&fromShare=true&action=default&mobileredirect=true" target="_blank">
+ Final de Ciclo 2026
+ </a>
+ </div>
+
+ <div class="card">
+ <div class="card-icon">📋</div>
+ <a href="https://sicredi.atlassian.net/servicedesk/customer/portal/1269" target="_blank">
+ Emissão de Termos
+ </a>
+ </div>
+
+ </div>
+
+</div>
+
+<div class="modal" id="modalRemover">
+
+ <div class="modal-content">
+
+ <div class="modal-icon">
+ 🗑️
+ </div>
+
+ <h2>Remover Atalho</h2>
+
+ <p id="textoRemocao">
+ Tem certeza que deseja excluir este atalho?
+ </p>
+
+ <div class="modal-actions">
+
+ <button
+ class="btn-cancelar"
+ onclick="fecharModal()">
+ Cancelar
+ </button>
+
+ <button
+ class="btn-confirmar"
+ onclick="confirmarRemocao()">
+ Excluir
+ </button>
+
+ </div>
+
+ </div>
+
+</div>
+
+<script>
+
+let cardParaRemover = null;
+let nomeParaRemover = null;
+let urlParaRemover = null;
+
+function atualizarRelogio(){
+
+ const agora = new Date();
+
+ document.getElementById("relogio").innerHTML =
+ agora.toLocaleDateString("pt-BR")
+ + " "
+ + agora.toLocaleTimeString("pt-BR");
+
+}
+
+setInterval(atualizarRelogio,1000);
+atualizarRelogio();
+
+function criarAtalho(nome,url,salvar=false){
+
+ const container =
+ document.getElementById("linksContainer");
+
+ const card =
+ document.createElement("div");
+
+ card.className = "card";
+
+ card.innerHTML = `
+ <div class="card-icon">🌐</div>
+
+ <a href="${url}" target="_blank">
+ ${nome}
+ </a>
+
+ <button
+ class="btn-remover"
+ onclick="removerAtalho(this,'${nome}','${url}')">
+ 🗑️ Excluir Atalho
+ </button>
+ `;
+
+ container.appendChild(card);
+
+ if(salvar){
+
+ let atalhos =
+ JSON.parse(localStorage.getItem("atalhos")) || [];
+
+ atalhos.push({nome,url});
+
+ localStorage.setItem(
+ "atalhos",
+ JSON.stringify(atalhos)
+ );
+
+ }
+
+ atualizarQuantidade();
+}
+
+function adicionarLink(){
+
+ const nome =
+ document.getElementById("novoNome").value.trim();
+
+ const url =
+ document.getElementById("novoLink").value.trim();
+
+ if(!nome || !url){
+
+ alert("Preencha todos os campos >> 'Nome Atalho' e 'URL' <<");
+ return;
+ }
+
+ criarAtalho(nome,url,true);
+
+ document.getElementById("novoNome").value = "";
+ document.getElementById("novoLink").value = "";
+}
+
+function removerAtalho(botao,nome,url){
+
+ cardParaRemover =
+botao.parentElement;
+
+ nomeParaRemover = nome;
+ urlParaRemover = url;
+
+ document.getElementById("textoRemocao")
+ .innerHTML =
+ `Deseja remover o atalho <strong>${nome}</strong>?`;
+
+ document.getElementById("modalRemover")
+ .style.display = "flex";
+}
+
+function fecharModal(){
+
+ document.getElementById("modalRemover")
+ .style.display = "none";
+}
+
+function confirmarRemocao(){
+
+ if(cardParaRemover){
+
+ cardParaRemover.remove();
+
+ let atalhos =
+ JSON.parse(localStorage.getItem("atalhos")) || [];
+
+ atalhos =
+ atalhos.filter(a =>
+ !(a.nome === nomeParaRemover &&
+a.url === urlParaRemover)
+ );
+
+ localStorage.setItem(
+ "atalhos",
+ JSON.stringify(atalhos)
+ );
+
+ atualizarQuantidade();
+ }
+
+ fecharModal();
+}
+
+function carregarAtalhos(){
+
+ let atalhos =
+ JSON.parse(localStorage.getItem("atalhos")) || [];
+
+ atalhos.forEach(atalho => {
+
+ criarAtalho(
+atalho.nome,
+atalho.url,
+ false
+ );
+
+ });
+
+}
+
+function filtrarLinks(){
+
+ const pesquisa =
+ document.getElementById("pesquisa")
+ .value
+ .toLowerCase();
+
+ const cards =
+ document.querySelectorAll(".card");
+
+ let encontrados = 0;
+
+ cards.forEach(card => {
+
+ const texto =
+card.innerText.toLowerCase();
+
+ if(texto.includes(pesquisa)){
+
+card.style.display = "block";
+ encontrados++;
+
+ }else{
+
+card.style.display = "none";
+
+ }
+
+ });
+
+ document.getElementById("resultadoPesquisa")
+ .textContent =
+ "🔎 " + encontrados + " atalhos encontrados";
+}
+
+function atualizarQuantidade(){
+
+ const total =
+ document.querySelectorAll(".card").length;
+
+ document.getElementById("totalAtalhos")
+ .textContent = total;
+
+ document.getElementById("resultadoPesquisa")
+ .textContent =
+ "📌 " + total + " atalhos cadastrados";
+}
+
+carregarAtalhos();
+atualizarQuantidade();
+
+</script>
+
+</body>
+</html>
