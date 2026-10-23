@@ -832,9 +832,134 @@
                 -webkit-backdrop-filter: blur(18px);
                 backdrop-filter: blur(18px);
             }
+
+            /* ===== V4.1: efeitos e "Mais usados" ===== */
+            #bg {
+                position: fixed;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                z-index: -1;
+                pointer-events: none;
+            }
+            #glow {
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 560px;
+                height: 560px;
+                margin: -280px 0 0 -280px;
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: -1;
+                opacity: 0;
+                transition:
+                    opacity 0.4s,
+                    transform 0.25s ease-out;
+                background: radial-gradient(circle, rgba(76, 141, 255, 0.17), transparent 65%);
+                will-change: transform;
+            }
+            @media (hover: none) {
+                #glow {
+                    display: none;
+                }
+            }
+            #top {
+                margin-top: 26px;
+            }
+            #top:empty {
+                margin: 0;
+            }
+            #top h2 {
+                display: flex;
+                gap: 10px;
+                align-items: baseline;
+                margin-bottom: 14px;
+                font-size: 18px;
+            }
+            #top h2 small {
+                color: var(--mut);
+                font-weight: 400;
+                font-size: 13px;
+            }
+            .tops {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+                gap: 16px;
+                perspective: 900px;
+            }
+            .tc {
+                --h: 215;
+                --x: 50%;
+                --y: 50%;
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+                padding: 20px;
+                border-radius: 20px;
+                overflow: hidden;
+                color: inherit;
+                text-decoration: none;
+                background: linear-gradient(160deg, hsl(var(--h) 80% 55%/0.24), rgba(14, 24, 48, 0.78) 62%);
+                border: 1px solid hsl(var(--h) 90% 70%/0.32);
+                box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+                transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+                transition:
+                    transform 0.15s ease-out,
+                    box-shadow 0.3s;
+            }
+            .tc:hover {
+                box-shadow: 0 26px 64px hsl(var(--h) 90% 50%/0.38);
+            }
+            .tc::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+                opacity: 0;
+                transition: opacity 0.25s;
+                background: radial-gradient(
+                    260px circle at var(--x) var(--y),
+                    hsl(var(--h) 100% 80%/0.22),
+                    transparent 70%
+                );
+            }
+            .tc:hover::after {
+                opacity: 1;
+            }
+            .tc .ic {
+                width: 58px;
+                height: 58px;
+                font-size: 29px;
+                border-radius: 17px;
+            }
+            .tc b {
+                display: block;
+                font-size: 17px;
+            }
+            .tc small {
+                color: var(--mut);
+                font-size: 13px;
+            }
+            .rank {
+                position: absolute;
+                right: 16px;
+                top: 14px;
+                font-size: 26px;
+            }
+            .tip {
+                padding: 18px 20px;
+                border: 1px dashed var(--line);
+                border-radius: 16px;
+                color: var(--mut);
+                font-size: 14px;
+            }
         </style>
     </head>
     <body>
+        <canvas id="bg"></canvas>
+        <div id="glow"></div>
         <div class="wrap">
             <header>
                 <div class="brand">
@@ -873,11 +998,12 @@
             </div>
 
             <div class="chips"><span id="chips" style="display: contents"></span><span id="count"></span></div>
+            <div id="top"></div>
             <main id="out"></main>
 
             <footer>
                 <span>Portal de Atendimento <strong>Constat</strong></span
-                ><span>Versão 4.0</span>
+                ><span>Versão 4.1</span>
             </footer>
         </div>
 
@@ -973,7 +1099,6 @@
                     "Dispositivos e segurança",
                     [
                         ["Dell", "https://www.dell.com/support/home/pt-br", "💻"],
-                        ["Microsoft Entra", "https://entra.microsoft.com/#view/Microsoft_AAD_Devices/DevicesList.ReactView/initQuery~/%7B%22query%22%3A%22%22%2C%22osType%22%3A%22MacOS%22%7D", "🔧"],
                         ["BitLocker - Chave ID", "https://mbam.sicredi.com.br/helpdesk/KeyRecoveryPage.aspx", "🔑"],
                         [
                             "Apple Business",
@@ -1077,6 +1202,7 @@
                     ? `${found} ${found === 1 ? "resultado" : "resultados"}`
                     : `${total} atalhos em ${g.length} categorias`;
                 $("#sbox").classList.toggle("has-q", !!q);
+                renderTop();
             }
 
             /* relógio e saudação */
@@ -1105,7 +1231,10 @@
             $("#q").addEventListener("keydown", (e) => {
                 if (e.key === "Enter") {
                     const a = document.querySelector("#out .lnk");
-                    if (a) window.open(a.href, "_blank", "noopener");
+                    if (a) {
+                        bump(a.href);
+                        window.open(a.href, "_blank", "noopener");
+                    }
                 }
                 if (e.key === "Escape") {
                     e.target.value = "";
@@ -1247,6 +1376,153 @@
                     r.style.setProperty("--y", e.clientY - k.top + "px");
                 }
             });
+
+            /* mais usados */
+            let usos = ls("usos", {});
+            const HUES = [215, 190, 265, 155, 330];
+            function renderTop() {
+                const el = $("#top");
+                if (q || cat !== "Todos") {
+                    el.innerHTML = "";
+                    return;
+                }
+                const m = {};
+                groups().forEach((g, gi) => g.items.forEach((i) => (m[key(i.url)] = { i, h: HUES[gi % 5] })));
+                const l = Object.entries(usos)
+                        .filter(([u]) => m[u])
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 4),
+                    med = ["🥇", "🥈", "🥉", "⭐"];
+                el.innerHTML =
+                    "<h2>🔥 Mais usados <small>com base nos seus acessos</small></h2>" +
+                    (l.length
+                        ? '<div class="tops">' +
+                          l
+                              .map(([u, n], k) => {
+                                  const { i, h } = m[u];
+                                  return `<a class="tc" style="--h:${h}" href="${esc(i.url)}" target="_blank" rel="noopener noreferrer"><span class="rank">${med[k]}</span><span class="ic">${icons[u] || i.ic}</span><span><b>${esc(i.nome)}</b><small>${n} ${n === 1 ? "acesso" : "acessos"} · ${esc(host(i.url))}</small></span></a>`;
+                              })
+                              .join("") +
+                          "</div>"
+                        : '<div class="tip">Abra alguns atalhos e os seus favoritos aparecem aqui automaticamente.</div>');
+            }
+            function bump(u) {
+                u = key(u);
+                usos[u] = (usos[u] || 0) + 1;
+                sv("usos", usos);
+                setTimeout(renderTop, 400);
+            }
+            document.addEventListener("click", (e) => {
+                const a = e.target.closest("a.lnk,a.tc");
+                if (a) bump(a.href);
+            });
+            document.addEventListener("auxclick", (e) => {
+                const a = e.target.closest("a.lnk,a.tc");
+                if (a && e.button === 1) bump(a.href);
+            });
+
+            /* inclinação 3D nos cards de destaque */
+            document.addEventListener("pointermove", (e) => {
+                const t = e.target.closest && e.target.closest(".tc");
+                if (!t) return;
+                const k = t.getBoundingClientRect(),
+                    px = (e.clientX - k.left) / k.width - 0.5,
+                    py = (e.clientY - k.top) / k.height - 0.5;
+                t.style.setProperty("--x", e.clientX - k.left + "px");
+                t.style.setProperty("--y", e.clientY - k.top + "px");
+                t.style.setProperty("--rx", -py * 9 + "deg");
+                t.style.setProperty("--ry", px * 9 + "deg");
+            });
+            document.addEventListener("pointerout", (e) => {
+                const t = e.target.closest && e.target.closest(".tc");
+                if (t && !t.contains(e.relatedTarget)) {
+                    t.style.setProperty("--rx", "0deg");
+                    t.style.setProperty("--ry", "0deg");
+                }
+            });
+
+            /* luz que segue o cursor */
+            const gl = $("#glow");
+            addEventListener("pointermove", (e) => {
+                gl.style.opacity = 1;
+                gl.style.transform = `translate(${e.clientX}px,${e.clientY}px)`;
+            });
+
+            /* sugestões rodando na busca */
+            const EX = [
+                "Jira",
+                "Acesso Inteligente",
+                "BitLocker",
+                "Jamf Pro",
+                "Chamados INFRASEC",
+                "Telefonia",
+                "Dell",
+            ];
+            let pi = 0;
+            setInterval(() => {
+                const f = $("#q");
+                if (document.activeElement !== f && !f.value) f.placeholder = "Buscar " + EX[pi++ % EX.length] + "...";
+            }, 2800);
+
+            /* constelação interativa no fundo */
+            (() => {
+                if (matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+                const c = $("#bg"),
+                    x = c.getContext("2d"),
+                    m = { x: -999, y: -999 };
+                let w,
+                    h,
+                    P = [];
+                const rs = () => {
+                    const d = devicePixelRatio || 1;
+                    w = innerWidth;
+                    h = innerHeight;
+                    c.width = w * d;
+                    c.height = h * d;
+                    x.setTransform(d, 0, 0, d, 0, 0);
+                    P = Array.from({ length: Math.min(70, Math.round((w * h) / 22000)) }, () => ({
+                        x: Math.random() * w,
+                        y: Math.random() * h,
+                        vx: (Math.random() - 0.5) * 0.35,
+                        vy: (Math.random() - 0.5) * 0.35,
+                    }));
+                };
+                rs();
+                addEventListener("resize", rs);
+                addEventListener("pointermove", (e) => {
+                    m.x = e.clientX;
+                    m.y = e.clientY;
+                });
+                const ln = (a, b, c2, al) => {
+                    x.strokeStyle = `rgba(${c2},${al})`;
+                    x.beginPath();
+                    x.moveTo(a.x, a.y);
+                    x.lineTo(b.x, b.y);
+                    x.stroke();
+                };
+                (function f() {
+                    x.clearRect(0, 0, w, h);
+                    x.fillStyle = "rgba(150,190,255,.75)";
+                    for (const p of P) {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        if (p.x < 0 || p.x > w) p.vx *= -1;
+                        if (p.y < 0 || p.y > h) p.vy *= -1;
+                        x.beginPath();
+                        x.arc(p.x, p.y, 1.6, 0, 6.3);
+                        x.fill();
+                    }
+                    for (let i = 0; i < P.length; i++) {
+                        for (let j = i + 1; j < P.length; j++) {
+                            const d = Math.hypot(P[i].x - P[j].x, P[i].y - P[j].y);
+                            if (d < 130) ln(P[i], P[j], "110,160,255", 0.24 * (1 - d / 130));
+                        }
+                        const d = Math.hypot(P[i].x - m.x, P[i].y - m.y);
+                        if (d < 180) ln(P[i], m, "34,211,238", 0.55 * (1 - d / 180));
+                    }
+                    requestAnimationFrame(f);
+                })();
+            })();
             $("#out").classList.add("intro");
             render();
             setTimeout(() => $("#out").classList.remove("intro"), 1500);
